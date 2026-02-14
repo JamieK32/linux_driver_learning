@@ -1,0 +1,19 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "brcm,bcm2711";
+
+    fragment@0 {
+        target-path = "/";
+        __overlay__ {
+            myled {
+                compatible = "mycompany,myled";
+                led-r-gpios = <&gpio 13 0>;   /* BCM13 */
+                led-g-gpios = <&gpio 19 0>;   /* BCM19 */
+                led-b-gpios = <&gpio 26 0>;   /* BCM26 */
+            };
+        };
+    };
+};
+
