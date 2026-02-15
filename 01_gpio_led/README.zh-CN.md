@@ -77,7 +77,7 @@
 
 ```bash
 dtc -@ -I dts -O dtb -o myled.dtbo myled-overlay.dts
-sudo cp myled.dtbo /boot/overlays/
+sudo cp myled.dtbo /boot/firmware/overlays/
 ```
 
 编辑 `/boot/config.txt` 添加：

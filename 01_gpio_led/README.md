@@ -80,7 +80,7 @@ dtc -@ -I dts -O dtb -o myled.dtbo myled-overlay.dts
 sudo cp myled.dtbo /boot/overlays/
 ```
 
-Add the following line to `/boot/config.txt`:
+Add the following line to `/boot/firmware/config.txt`:
 
 ```
 dtoverlay=myled
