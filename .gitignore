@@ -1,0 +1,74 @@
+# =========================
+# Linux kernel module build artifacts
+# =========================
+*.o
+*.ko
+*.mod
+*.mod.c
+*.mod.o
+*.symvers
+*.order
+Module.symvers
+modules.order
+
+# Kbuild temp files
+.*.cmd
+.tmp_versions/
+*.cmd
+*.d
+*.a
+*.so
+
+# Kernel build dir leftovers
+vmlinux
+vmlinux.*
+System.map
+System.map.*
+
+# =========================
+# Device Tree build artifacts
+# =========================
+*.dtb
+*.dtbo
+*.tmp
+*.lst
+
+# =========================
+# Logs / captures (optional)
+# Keep images/ tracked, but ignore raw logs if you want
+# =========================
+*.log
+dmesg.txt
+*.dump
+
+# If you want to keep logs/ folder but ignore its contents:
+# logs/*
+# !logs/.gitkeep
+
+# =========================
+# Editor / IDE
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.bak
+
+# =========================
+# OS junk
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Python / Node (if any tools later)
+# =========================
+__pycache__/
+*.pyc
+node_modules/
+
+# =========================
+# Misc
+# =========================
+.cache/
