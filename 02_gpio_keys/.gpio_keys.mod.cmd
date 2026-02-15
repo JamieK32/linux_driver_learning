@@ -1,1 +1,0 @@
-savedcmd_/home/pi/linux_driver_learning/02_gpio_keys/gpio_keys.mod := printf '%s\n'   gpio_keys.o | awk '!x[$$0]++ { print("/home/pi/linux_driver_learning/02_gpio_keys/"$$0) }' > /home/pi/linux_driver_learning/02_gpio_keys/gpio_keys.mod

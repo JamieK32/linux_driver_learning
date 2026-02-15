@@ -1,1 +1,0 @@
-savedcmd_/home/pi/linux_driver_learning/01_gpio_led/Module.symvers :=  scripts/mod/modpost -M -m -a      -o /home/pi/linux_driver_learning/01_gpio_led/Module.symvers -n -T /home/pi/linux_driver_learning/01_gpio_led/modules.order -i Module.symvers -e 

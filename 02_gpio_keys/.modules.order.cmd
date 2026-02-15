@@ -1,1 +1,0 @@
-savedcmd_/home/pi/linux_driver_learning/02_gpio_keys/modules.order := {   echo /home/pi/linux_driver_learning/02_gpio_keys/gpio_keys.o; :; } > /home/pi/linux_driver_learning/02_gpio_keys/modules.order
