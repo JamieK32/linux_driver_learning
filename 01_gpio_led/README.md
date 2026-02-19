@@ -3,52 +3,52 @@
 
 # 01_gpio_led
 
-> RGB LED Linux kernel driver based on **platform_driver + Device Tree + gpiod + timer + sysfs**
-> Target platform: Raspberry Pi 4 (bcm2711)
+> 基于 platform_driver + Device Tree + gpiod + timer + sysfs 的 RGB LED 内核驱动示例
+> 运行平台：Raspberry Pi 4 (bcm2711)
 
 ---
 
-# 1. Project Overview
+# 一、项目简介
 
-This project implements a GPIO-based RGB LED kernel driver with the following features:
+本项目实现一个基于 GPIO 的 RGB LED 驱动，主要特性：
 
-* Uses the **platform_driver** model
-* Device instantiated via **Device Tree Overlay**
-* GPIOs acquired using the **gpiod consumer API**
-* LED blinking implemented with **kernel timer (timer_list)**
-* Runtime configuration through **sysfs interface**
+* 使用 **platform_driver** 驱动模型
+* 通过 **Device Tree Overlay** 创建设备
+* 使用 **gpiod 接口** 获取 GPIO
+* 使用 **内核定时器 timer_list** 实现闪烁
+* 通过 **sysfs** 动态修改：
 
-  * Adjustable blinking period
-  * RGB color selection (bitmask)
+  * 闪烁周期
+  * RGB 颜色组合
 
-This is the first module in a structured Linux driver learning roadmap, focusing on GPIO fundamentals.
-
----
-
-# 2. Hardware Connection
-
-## 2.1 Wiring Table
-
-| Color | GPIO (BCM) | Physical Pin | Notes                |
-| ----- | ---------- | ------------ | -------------------- |
-| R     | 13         | Pin 33       | 220Ω series resistor |
-| G     | 19         | Pin 35       | 220Ω series resistor |
-| B     | 26         | Pin 37       | 220Ω series resistor |
-| GND   | GND        | Any GND      | Common cathode       |
-
-> RGB LED type: **Common Cathode**
+该项目属于 Linux 驱动学习的第一个模块：GPIO 基础控制。
 
 ---
 
-## 2.2 Hardware Setup
+# 二、硬件连接
 
-![Hardware Wiring](images/hardware.jpg)
+## 2.1 接线说明
+
+| 颜色  | GPIO(BCM) | 物理引脚   | 说明         |
+| --- | --------- | ------ | ---------- |
+| R   | 13        | Pin 33 | 串联 220Ω 电阻 |
+| G   | 19        | Pin 35 | 串联 220Ω 电阻 |
+| B   | 26        | Pin 37 | 串联 220Ω 电阻 |
+| GND | GND       | 任意     | 共阴极        |
+
+> 使用共阴极 RGB LED
 
 ---
 
-# 3. Device Tree Overlay
+## 2.2 实物连接图
 
-File: `myled-overlay.dts`
+![硬件连接图](images/hardware.jpg)
+
+---
+
+# 三、设备树 Overlay
+
+文件：`myled-overlay.dts`
 
 ```dts
 /dts-v1/;
@@ -73,20 +73,20 @@ File: `myled-overlay.dts`
 
 ---
 
-## Compile Overlay
+## 编译 overlay
 
 ```bash
 dtc -@ -I dts -O dtb -o myled.dtbo myled-overlay.dts
-sudo cp myled.dtbo /boot/overlays/
+sudo cp myled.dtbo /boot/firmware/overlays/
 ```
 
-Add the following line to `/boot/firmware/config.txt`:
+编辑 `/boot/config.txt` 添加：
 
 ```
 dtoverlay=myled
 ```
 
-Reboot:
+重启系统：
 
 ```bash
 sudo reboot
@@ -94,31 +94,31 @@ sudo reboot
 
 ---
 
-# 4. Driver Build & Load
+# 四、驱动编译与加载
 
-## 4.1 Build
+## 4.1 编译
 
 ```bash
 make
 ```
 
-## 4.2 Load Module
+## 4.2 加载模块
 
 ```bash
 sudo insmod gpio_led.ko
 ```
 
-## 4.3 Check Kernel Log
+## 4.3 查看内核日志
 
 ```bash
 dmesg | grep myled
 ```
 
-### Runtime Log Screenshot
+### 运行截图
 
-![dmesg output](images/dmesg.png)
+![dmesg日志](images/dmesg.png)
 
-Expected output:
+期望输出：
 
 ```
 myled: GPIO 13 19 26 LED blink driver loaded
@@ -126,70 +126,70 @@ myled: GPIO 13 19 26 LED blink driver loaded
 
 ---
 
-# 5. Sysfs Interface
+# 五、sysfs 接口
 
-After loading, the driver creates:
+驱动加载后，会在：
 
 ```
 /sys/devices/platform/myled/
 ```
 
-Attributes:
+生成两个属性文件：
 
 ```
 period_ms
 rgb_color
 ```
 
-Directory screenshot:
+查看目录截图：
 
-![sysfs directory](images/sysfs_ls.png)
+![sysfs目录](images/sysfs_ls.png)
 
 ---
 
-# 6. Functional Test
+# 六、功能测试
 
-## 6.1 Change Blinking Period
+## 6.1 修改闪烁周期
 
 ```bash
 echo 1000 | sudo tee /sys/devices/platform/myled/period_ms
 ```
 
-Unit: milliseconds
-Minimum allowed: 10ms
+单位：毫秒
+最小限制：10ms
 
 ---
 
-## 6.2 Change Color
+## 6.2 修改颜色
 
-Color is controlled via bitmask (0–7):
+颜色为 0~7 的 bitmask：
 
-| Value | Color  |
-| ----- | ------ |
-| 0     | Off    |
-| 1     | Red    |
-| 2     | Green  |
-| 3     | Yellow |
-| 4     | Blue   |
-| 5     | Purple |
-| 6     | Cyan   |
-| 7     | White  |
+| 数值 | 颜色 |
+| -- | -- |
+| 0  | 熄灭 |
+| 1  | 红  |
+| 2  | 绿  |
+| 3  | 黄  |
+| 4  | 蓝  |
+| 5  | 紫  |
+| 6  | 青  |
+| 7  | 白  |
 
-Example:
+示例：
 
 ```bash
 echo 7 | sudo tee /sys/devices/platform/myled/rgb_color
 ```
 
-### White Blinking Example
+### 白光闪烁效果
 
-![White blinking](images/blink_white.jpg)
+![白色闪烁效果](images/blink_white.jpg)
 
 ---
 
-# 7. Driver Architecture
+# 七、驱动架构说明
 
-Overall driver flow:
+驱动整体流程：
 
 ```
 Device Tree
@@ -204,26 +204,26 @@ devm_gpiod_get()
       ↓
 timer_setup()
       ↓
-Create sysfs attributes
+sysfs 属性创建
 ```
 
 ---
 
-# 8. Kernel Concepts Covered
+# 八、涉及的内核知识点
 
-* platform_driver registration
-* of_match_table device matching
-* devm_gpiod_get resource management
-* timer_list kernel timer
-* from_timer macro usage
-* sysfs device attributes
+* platform_driver 注册机制
+* of_match_table 设备匹配
+* devm_gpiod_get GPIO 资源管理
+* timer_list 定时器机制
+* from_timer 宏使用
+* sysfs 设备属性创建
 * device_create_file
-* mod_timer and jiffies
-* msecs_to_jiffies conversion
+* mod_timer 与 jiffies
+* msecs_to_jiffies 转换机制
 
 ---
 
-# 9. Directory Structure
+# 九、目录结构
 
 ```
 01_gpio_led/
@@ -240,28 +240,30 @@ Create sysfs attributes
 
 ---
 
-# 10. Summary
+# 十、项目总结
 
-This project demonstrates a complete implementation of:
+本项目实现了一个完整的：
 
-* Device Tree + platform driver model
-* GPIO resource management
-* Kernel timer usage
-* sysfs runtime control interface
+* 设备树 + 平台驱动
+* GPIO 资源管理
+* 内核定时器
+* sysfs 用户接口
 
-It serves as a foundational module for embedded Linux driver development.
+属于嵌入式 Linux 驱动开发中的基础模块。
 
-Future modules will extend to:
+后续模块将逐步扩展到：
 
-* Interrupt handling (gpio_keys)
-* PWM subsystem
-* IIO subsystem
-* SPI driver
-* LED class subsystem
-* ASoC audio subsystem
+* 中断（gpio_keys）
+* PWM 子系统
+* IIO 子系统
+* SPI 驱动
+* LED class 子系统
+* ASoC 音频子系统
 
 ---
 
-# Project Positioning
+# 项目定位
 
-This project is the first stage in a structured Linux driver development roadmap and establishes a solid foundation for more complex kernel subsystems.
+该项目是 Linux 驱动学习路线中的第一阶段基础项目，为后续复杂驱动打基础。
+
+---

@@ -1,0 +1,16 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "brcm,bcm2711";
+
+    fragment@0 {
+        target-path = "/";
+        __overlay__ {
+            my_beeper: my-beeper {
+                compatible = "my,pwm-beeper";
+                pwms = <&pwm 0 1000000 0>;
+            };
+        };
+    };
+};

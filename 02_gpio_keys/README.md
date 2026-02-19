@@ -3,65 +3,65 @@
 
 # 02_gpio_keys
 
-> Single GPIO Key Driver based on **platform_driver + GPIO + IRQ + Linux Input Subsystem**
-> Target platform: Raspberry Pi 4 (bcm2711)
+> 基于 platform_driver + GPIO + IRQ + Input Subsystem 的单按键驱动示例
+> 运行平台：Raspberry Pi 4 (bcm2711)
 
 ---
 
-# 1. Project Overview
+# 一、项目简介
 
-This project implements a GPIO-based key driver using the standard Linux **input subsystem** to report key events.
+本项目实现一个基于 GPIO 的按键驱动，采用 Linux 标准输入子系统（input subsystem）进行按键事件上报。
 
-Main features:
+主要特性：
 
-* Uses the `platform_driver` model
-* Device instantiated via Device Tree Overlay
-* GPIO acquired using the `gpiod` consumer API
-* GPIO converted to IRQ
-* Uses `devm_request_threaded_irq`
-* Integrated with Linux input subsystem
-* Automatically generates `/dev/input/eventX`
-* Includes basic software debounce handling
+* 使用 `platform_driver` 驱动模型
+* 通过 Device Tree Overlay 创建设备
+* 使用 `gpiod` 接口获取 GPIO
+* GPIO 转换为 IRQ
+* 使用 `devm_request_threaded_irq`
+* 接入 Linux input 子系统
+* 生成 `/dev/input/eventX`
+* 支持简单软件消抖
 
-This project represents the second stage in the Linux driver learning roadmap:
-transitioning from active device control to an interrupt-driven model.
+该项目是 Linux 驱动学习路线的第二阶段：
+从“主动控制设备”进入“中断驱动模型”。
 
 ---
 
-# 2. Hardware Connection
+# 二、硬件连接
 
-## 2.1 Wiring Description
+## 2.1 接线说明
 
-| Function | GPIO (BCM) | Physical Pin | Notes                      |
-| -------- | ---------- | ------------ | -------------------------- |
-| KEY1     | 26         | Pin 32       | GPIO26                     |
-| GND      | GND        | Any          | Button connected to ground |
+| 功能   | GPIO(BCM) | 物理引脚   | 说明     |
+| ---- | --------- | ------ | ------ |
+| KEY1 | 26        | Pin 32 | GPIO26 |
+| GND  | GND       | 任意     | 按键接地   |
 
-Wiring:
+接法说明：
 
 ```
-BCM26 ---- Button ---- GND
+BCM26 ---- 按键 ---- GND
 ```
 
-The GPIO is configured as:
+使用：
 
 ```
 GPIO_ACTIVE_LOW
 ```
 
-Meaning the signal is low when the button is pressed.
+表示按下时为低电平。
 
 ---
 
-## 2.2 Hardware Setup
+## 2.2 实物连接图
 
-![Hardware Wiring](images/hardware.jpg)
+![硬件连接图](images/hardware.jpg)
 
 ---
 
-# 3. Device Tree Overlay
+# 三、设备树 Overlay
 
-File: `mykeys-overlay.dts`
+文件：`mykeys-overlay.dts`
 
 ```dts
 /dts-v1/;
@@ -84,20 +84,20 @@ File: `mykeys-overlay.dts`
 
 ---
 
-## Compile Overlay
+## 编译 overlay
 
 ```bash
 dtc -@ -I dts -O dtb -o mykeys.dtbo mykeys-overlay.dts
 sudo cp mykeys.dtbo /boot/overlays/
 ```
 
-Edit `/boot/firmware/config.txt`:
+编辑 `/boot/firmware/config.txt`：
 
 ```
 dtoverlay=mykeys
 ```
 
-Reboot:
+重启：
 
 ```bash
 sudo reboot
@@ -105,31 +105,31 @@ sudo reboot
 
 ---
 
-# 4. Driver Build & Load
+# 四、驱动编译与加载
 
-## 4.1 Build
+## 4.1 编译
 
 ```bash
 make
 ```
 
-## 4.2 Load Module
+## 4.2 加载模块
 
 ```bash
 sudo insmod gpio_keys.ko
 ```
 
-## 4.3 Check Kernel Log
+## 4.3 查看内核日志
 
 ```bash
 dmesg | grep mykeys
 ```
 
-### dmesg Screenshot
+### dmesg 截图
 
-![dmesg log](images/dmesg.png)
+![dmesg日志](images/dmesg.png)
 
-Expected output:
+期望输出：
 
 ```
 GPIO key driver loaded
@@ -137,21 +137,21 @@ GPIO key driver loaded
 
 ---
 
-# 5. Input Subsystem Verification
+# 五、Input 子系统验证
 
-After the driver is successfully loaded, it registers an input device automatically.
+驱动加载成功后，会自动注册 input 设备。
 
-## 5.1 Check Registered Input Devices
+## 5.1 查看 input 设备
 
 ```bash
 cat /proc/bus/input/devices
 ```
 
-Screenshot:
+截图：
 
-![input devices](images/input_devices.png)
+![input设备](images/input_devices.png)
 
-You should see:
+你应看到：
 
 ```
 N: Name="my-gpio-key"
@@ -159,42 +159,42 @@ N: Name="my-gpio-key"
 
 ---
 
-## 5.2 Test with evtest
+## 5.2 使用 evtest 测试
 
-Install:
+安装：
 
 ```bash
 sudo apt install evtest
 ```
 
-Run:
+运行：
 
 ```bash
 sudo evtest
 ```
 
-Select:
+选择：
 
 ```
 my-gpio-key
 ```
 
-When pressing the button, you should see output similar to:
+按下按键，输出类似：
 
 ```
 Event: type 1 (EV_KEY), code 28 (KEY_ENTER), value 1
 Event: type 1 (EV_KEY), code 28 (KEY_ENTER), value 0
 ```
 
-Screenshot:
+截图：
 
-![evtest output](images/evtest.png)
+![evtest输出](images/evtest.png)
 
 ---
 
-# 6. Driver Architecture
+# 六、驱动架构说明
 
-Overall driver flow:
+整体调用流程：
 
 ```
 Device Tree
@@ -222,21 +222,21 @@ input_sync()
 
 ---
 
-# 7. Key Technical Concepts
+# 七、关键技术点
 
-* platform_driver registration
-* gpiod consumer API
-* GPIO to IRQ conversion
-* Interrupt trigger configuration (rising / falling edge)
-* Threaded IRQ
-* Linux input subsystem architecture
+* platform_driver 注册机制
+* gpiod 接口使用
+* GPIO → IRQ 转换
+* 中断触发机制（上升沿 / 下降沿）
+* threaded irq
+* input 子系统架构
 * input_report_key
 * input_sync
-* Event-driven programming model in Linux
+* Linux 事件驱动模型
 
 ---
 
-# 8. Directory Structure
+# 八、目录结构
 
 ```
 02_gpio_keys/
@@ -253,45 +253,48 @@ input_sync()
 
 ---
 
-# 9. Project Significance
+# 九、项目意义
 
-This project marks the transition from:
+本项目标志着从：
 
 ```
-Direct GPIO Control
-        ↓
-Interrupt-driven Design
-        ↓
-Integration with Kernel Subsystems
+GPIO 控制
+    ↓
+进入
+    ↓
+中断驱动模型
+    ↓
+接入内核子系统
 ```
 
-It represents a core stage in embedded Linux driver development.
+属于嵌入式 Linux 驱动开发中的核心阶段。
 
 ---
 
-# 10. Stage Summary
+# 十、阶段总结
 
-This chapter covers:
+本章完成内容：
 
-* Interrupt registration and management
-* IRQ trigger mechanisms
-* Software debounce handling
-* Integration with the Linux input subsystem
-* Generation of standard Linux input events
+* 中断注册与释放
+* IRQ 触发机制
+* 软件消抖处理
+* Input 子系统接入
+* 生成标准 Linux 输入事件
 
-It lays the foundation for future topics such as:
+为后续学习：
 
-* PWM subsystem
-* I2C sensors
-* IIO framework
-* SPI drivers
-* ASoC audio subsystem
+* PWM 子系统
+* I2C 传感器
+* IIO 框架
+* SPI 驱动
+* ASoC 音频子系统
+
+打下基础。
 
 ---
 
-# Project Positioning
+# 项目定位
 
-Second stage of the Linux driver learning roadmap —
-GPIO interrupt handling and input subsystem integration.
+Linux 驱动学习路线第二阶段 —— GPIO 中断与输入子系统。
 
 ---

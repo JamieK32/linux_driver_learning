@@ -57,8 +57,8 @@ static int mykeys_probe(struct platform_device *pdev)
     data->input->phys = "my-gpio-key/input0";
     data->input->id.bustype = BUS_HOST;
 
-    __set_bit(EV_KEY, data->input->evbit);
-    __set_bit(KEY_ENTER, data->input->keybit);
+    __set_bit(EV_KEY, data->input->evbit); //type 
+    __set_bit(KEY_ENTER, data->input->keybit); //code
 
     ret = input_register_device(data->input);
     if (ret)
