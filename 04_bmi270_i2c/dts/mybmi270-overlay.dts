@@ -1,0 +1,27 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "brcm,bcm2711";
+
+    fragment@0 {
+        target = <&i2c1>;
+        __overlay__ {
+
+            #address-cells = <1>;
+            #size-cells = <0>;
+
+            bmi270@69 {
+                compatible = "bosch,bmi270";
+                reg = <0x69>;
+
+                interrupt-parent = <&gpio>;
+                interrupts = <17 0x1>;   // rising edge
+                interrupt-names = "INT1";
+
+                drive-open-drain;
+                status = "okay";
+            };
+        };
+    };
+};
