@@ -163,7 +163,7 @@ if (ret)
 
 📌 修改示意图：
 
-![img](file:///C:/%5CUsers%5Ckjmsd%5CDesktop%5Cimages%5Ccode2.png)
+![img](images/code2.png)
 
 ------
 
@@ -201,7 +201,7 @@ int state
 
 📌 修改示意图：
 
-![img](file:///C:/%5CUsers%5Ckjmsd%5CDesktop%5Cimages%5Ccode1.png)
+![img](images/code1.png)
 
 ------
 
@@ -227,7 +227,7 @@ EXPORT_SYMBOL_GPL(...);
 
 📌 修改示意图：
 
-![img](file:///C:/%5CUsers%5Ckjmsd%5CDesktop%5Cimages%5Ccode3.png)
+![img](images/code3.png)
 
 ------
 
@@ -264,7 +264,7 @@ Device Drivers
         → Inertial measurement units
 ```
 
-![img](file:///C:/%5CUsers%5Ckjmsd%5CDesktop%5Cimages%5Cmenu_config.png)
+![img](images/menu_config.png)
 
 启用：
 
@@ -412,7 +412,7 @@ dtoverlay=mybmi270
 | VCC    | 3.3V         | 1 / 17 |
 | GND    | GND          | 6 / 9  |
 
-![img](/images/hardware.jpg)
+![img](images/hardware.jpg)
 
 验证地址：
 
@@ -420,7 +420,7 @@ dtoverlay=mybmi270
 sudo i2cdetect -y 1
 ```
 
-![img](/images/i2cdetect.png)
+![img](images/i2cdetect.png)
 
 ------
 
@@ -474,7 +474,7 @@ cat /sys/bus/iio/devices/iio:device0/in_accel_scale
 
 # 十一、用户态读取程序
 
-![img](/images/app.png)
+![img](images/app.png)
 
 编译：
 
@@ -485,7 +485,7 @@ gcc bmi270_read_sysfs.c -o bmi270_app
 
 输出示例：
 
-![img](/images%5Cbmi270_output.png)
+![img](images/bmi270_output.png)
 
 ------
 
