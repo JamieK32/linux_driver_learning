@@ -412,15 +412,15 @@
       function animate() { requestAnimationFrame(animate); renderer.render(scene, camera); }
       init3D(); animate();
 
-      // ==========================================================
-      // 4) WebSocket
+// ==========================================================
+      // 4) WebSocket (极速重连优化版)
       // ==========================================================
       function buildWsUrl() {
         const qs = new URLSearchParams(location.search);
         return qs.get('ws') || 'ws://localhost:8765';
       }
 
-      let ws = null, reconnectTry = 0, reconnectTimer = 0, latestImu = null, lastRxMs = 0;
+      let ws = null, reconnectTimer = 0, latestImu = null, lastRxMs = 0;
 
       function setStatus(connected, text) {
         if (connected) el.badge.classList.remove('disconnected');
@@ -429,8 +429,15 @@
       }
 
       function scheduleReconnect() {
-        reconnectTry++;
-        reconnectTimer = setTimeout(connectWS, Math.min(8000, 500 * Math.pow(2, reconnectTry - 1)));
+        clearTimeout(reconnectTimer);
+        if (ws) {
+            ws.onclose = null; // 防止重复触发
+            ws.onerror = null;
+            ws.close();
+            ws = null;
+        }
+        // 固定 1.5 秒重试一次，拒绝漫长等待
+        reconnectTimer = setTimeout(connectWS, 1500);
       }
 
       function sendParams() {
@@ -448,9 +455,17 @@
         try { ws = new WebSocket(buildWsUrl()); } 
         catch { scheduleReconnect(); return; }
 
-        ws.onopen = () => { reconnectTry = 0; setStatus(true, 'Live Stream Active'); sendParamsDebounced(); };
-        ws.onerror = () => { setStatus(false, 'Socket Error'); };
-        ws.onclose = () => { setStatus(false, 'Connection Lost'); scheduleReconnect(); };
+        ws.onopen = () => { 
+            setStatus(true, 'Live Stream Active'); 
+            sendParamsDebounced(); // 重连成功后，立刻把当前网页上的参数再发给后端
+        };
+        ws.onerror = () => { 
+            // 发生错误时，不要在这里调度重连，交给 onclose 统一处理即可
+        };
+        ws.onclose = () => { 
+            setStatus(false, 'Connection Lost'); 
+            scheduleReconnect(); 
+        };
         ws.onmessage = (event) => {
           lastRxMs = performance.now();
           try {
