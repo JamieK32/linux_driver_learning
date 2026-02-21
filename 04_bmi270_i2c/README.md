@@ -341,7 +341,7 @@ sync
 参考文档：
 
 ```
-./bmi270_firmware.md
+./docs/bmi270_firmware.md
 ```
 
 ------

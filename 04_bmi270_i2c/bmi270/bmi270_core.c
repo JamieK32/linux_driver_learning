@@ -190,9 +190,10 @@ static const unsigned long bmi270_avail_scan_masks[] = {
 	(BIT(BMI270_SCAN_ACCEL_X) |
 	 BIT(BMI270_SCAN_ACCEL_Y) |
 	 BIT(BMI270_SCAN_ACCEL_Z) |
-	 BIT(BMI270_SCAN_GYRO_X) |
-	 BIT(BMI270_SCAN_GYRO_Y) |
-	 BIT(BMI270_SCAN_GYRO_Z)),
+	 BIT(BMI270_SCAN_GYRO_X)  |
+	 BIT(BMI270_SCAN_GYRO_Y)  |
+	 BIT(BMI270_SCAN_GYRO_Z)  |
+	 BIT(BMI270_SCAN_TIMESTAMP)),
 	0
 };
 
@@ -837,25 +838,26 @@ static const struct iio_trigger_ops bmi270_trigger_ops = {
 
 static irqreturn_t bmi270_trigger_handler(int irq, void *p)
 {
-	struct iio_poll_func *pf = p;
-	struct iio_dev *indio_dev = pf->indio_dev;
-	struct bmi270_data *data = iio_priv(indio_dev);
-	int ret;
+    struct iio_poll_func *pf = p;
+    struct iio_dev *indio_dev = pf->indio_dev;
+    struct bmi270_data *data = iio_priv(indio_dev);
+    int ret;
 
-	guard(mutex)(&data->mutex);
+    guard(mutex)(&data->mutex);
 
-	ret = regmap_bulk_read(data->regmap, BMI270_ACCEL_X_REG,
-			       &data->buffer.channels,
-			       sizeof(data->buffer.channels));
+    ret = regmap_bulk_read(data->regmap, BMI270_ACCEL_X_REG,
+                           data->buffer.channels,
+                           sizeof(data->buffer.channels));
+    if (ret)
+        goto done;
 
-	if (ret)
-		goto done;
+    data->buffer.timestamp = cpu_to_le64(iio_get_time_ns(indio_dev));
 
-	iio_push_to_buffers_with_timestamp(indio_dev, &data->buffer,
-					   pf->timestamp);
+    iio_push_to_buffers(indio_dev, &data->buffer);
+
 done:
-	iio_trigger_notify_done(indio_dev->trig);
-	return IRQ_HANDLED;
+    iio_trigger_notify_done(indio_dev->trig);
+    return IRQ_HANDLED;
 }
 
 static int bmi270_get_data(struct bmi270_data *data, int chan_type, int axis,
